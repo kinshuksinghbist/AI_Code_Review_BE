@@ -3,5 +3,27 @@ services:
     name: fastapi-app
     env: python
     plan: free
-    buildCommand: pip install -r requirements.txt 
-    startCommand: uvicorn api.app:app --host 0.0.0.0 --port 10000 
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn api.app:app --host 0.0.0.0 --port 10000
+    envVars:
+      - key: REDIS_URL
+        sync: false
+      - key: CELERY_BROKER_URL
+        value: "redis://redis-service:6379/10"
+      - key: CELERY_RESULT_BACKEND
+        value: "redis://redis-service:6379/10"
+
+  - name: celery-worker
+    type: worker
+    env: python
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "celery -A api.celery:app worker --loglevel=info"
+    envVars:
+      - key: CELERY_BROKER_URL
+        value: "redis://redis-service:6379/10"
+      - key: CELERY_RESULT_BACKEND
+        value: "redis://redis-service:6379/10"
+
+  - name: redis-service
+    type: redis
+    plan: free
