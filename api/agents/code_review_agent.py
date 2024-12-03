@@ -16,7 +16,7 @@ class CodeReviewAgent:
         self.prompt_template = PromptTemplate(
             input_variables=['title', 'body', 'patch'],
             template="""
-            Perform a comprehensive code review for the following Pull Request:
+            Perform a code review for the following Pull Request:
             
             PR Title: {title}
             PR Description: {body}
@@ -57,23 +57,13 @@ class CodeReviewAgent:
         )
 
     def analyze_pull_request(self, pr_details):
-        """
-        Analyze a pull request using AI-powered code review
         
-        Args:
-            pr_details (dict): Pull Request details from GitHub
-        
-        Returns:
-            dict: Structured code review analysis
-        """
-        # Prepare the prompt with specific details
         review_prompt = self.prompt_template.format(
             title=pr_details.get('title', ''),
             body=pr_details.get('body', ''),
             patch=pr_details.get('patch', '')
         )
         print("here2")
-        # Get AI review
         review_result = self.llm.predict(review_prompt)
         review_result = review_result[7:-3] 
 

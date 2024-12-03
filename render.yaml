@@ -23,6 +23,9 @@ services:
       - key: CELERY_RESULT_BACKEND
         value: "$REDIS_URL"
 
-  - name: redis-service
-    type: redis
+  - type: redis
+    name: redis-be
     plan: free
+    region: oregon
+    maxmemoryPolicy: allkeys-lru
+    ipAllowList: []

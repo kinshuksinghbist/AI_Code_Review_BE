@@ -36,7 +36,7 @@ async def submit_pr_review(request: PRReviewRequest):
             "review": existing_review
         }
 
-    task = process_code_review.delay(
+    process_code_review(
         repo_owner=request.repo_owner,
         repo_name=request.repo_name,
         pr_number=request.pr_number,
@@ -44,9 +44,13 @@ async def submit_pr_review(request: PRReviewRequest):
         task_id=task_id
     )
 
+    status_key = f"task_status:{task_id}"
+    status = redis_client.hgetall(status_key) 
+    
     return {
         "task_id": task_id,
-        "status": "pending"
+        "status": status.get('status', 'unknown'), 
+        "result": json.loads(status.get('result', None))  
     }
 
 @app.get("/status/{task_id}")
