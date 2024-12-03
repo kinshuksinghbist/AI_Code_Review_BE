@@ -41,7 +41,7 @@ def process_code_review(repo_owner, repo_name, pr_number, github_token, task_id)
         
         redis_client.hmset(status_key, {
             "status": "completed",
-            "result": str(review_result),
+            "result": str(f"TASK_ID:{task_id}" + review_result),
             "completed_at": datetime.now().isoformat()
         })
         
