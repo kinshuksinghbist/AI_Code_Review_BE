@@ -12,11 +12,9 @@ app = FastAPI(docs_url="/api/docs")
 
 load_dotenv()
 
-REDIS_HOST = os.getenv("REDIS_HOST")
-REDIS_PORT = os.getenv("REDIS_PORT")
-REDIS_DB = os.getenv("REDIS_DB")
+REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379/10") 
 
-redis_client = redis.StrictRedis(host=REDIS_HOST, port=REDIS_PORT, db=REDIS_DB, decode_responses=True)
+redis_client = redis.StrictRedis.from_url(REDIS_URL, decode_responses=True)
 
 class PRReviewRequest(BaseModel):
     repo_owner: str
@@ -26,7 +24,6 @@ class PRReviewRequest(BaseModel):
 
 @app.post("/api/analyze-pr")
 async def submit_pr_review(request: PRReviewRequest):
-    print(REDIS_HOST,REDIS_PORT,REDIS_DB)
     task_id = str(uuid.uuid4())
     
     existing_review_key = f"pr_review:{request.repo_owner}/{request.repo_name}:{request.pr_number}"

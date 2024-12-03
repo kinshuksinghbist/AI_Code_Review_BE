@@ -5,15 +5,13 @@ import os
 
 load_dotenv()
 
-REDIS_HOST = os.getenv("REDIS_HOST")
-REDIS_PORT = os.getenv("REDIS_PORT")
-REDIS_DB = os.getenv("REDIS_DB")
+REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379/10")  # Default for local dev
 
 
 # Configure Celery app
 app = Celery(
-    'code_review_tasks',  # Name of the Celery app
-    broker=f'redis://{REDIS_HOST}:{REDIS_PORT}/{REDIS_DB}',  # Redis broker URL
+    'code_review_tasks', 
+    broker=REDIS_URL,  
 )
 
 from api.tasks import process_code_review  

@@ -9,13 +9,11 @@ from datetime import datetime
 
 load_dotenv()
 
-REDIS_HOST = os.getenv("REDIS_HOST")
-REDIS_PORT = os.getenv("REDIS_PORT")
-REDIS_DB = os.getenv("REDIS_DB")
+REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379/10")  # Default for local dev
 
-redis_client = redis.StrictRedis(host=REDIS_HOST, port=REDIS_PORT, db=REDIS_DB, decode_responses=True)
+app = Celery('code_review_tasks', broker=REDIS_URL)
 
-app = Celery('code_review_tasks', broker=f'redis://{REDIS_HOST}:{REDIS_PORT}/{REDIS_DB}')
+redis_client = redis.StrictRedis.from_url(REDIS_URL, decode_responses=True)
 
 
 @app.task
