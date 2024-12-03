@@ -1,18 +1,7 @@
 import requests
 
 def fetch_pr_details(repo_owner, repo_name, pr_number, github_token):
-    """
-    Fetch Pull Request details from GitHub API
     
-    Args:
-        repo_owner (str): GitHub repository owner
-        repo_name (str): GitHub repository name
-        pr_number (int): Pull Request number
-        github_token (str): GitHub authentication token
-    
-    Returns:
-        dict: Pull Request details including patch, title, body
-    """
     headers = {
         'Authorization': f'token {github_token}',
     }
