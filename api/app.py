@@ -1,24 +1,22 @@
-from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel
-from api.tasks import process_code_review, add_the_nums
-import redis 
 import uuid
 import os
+import json
 
-os.environ.setdefault('FORKED_BY_MULTIPROCESSING', '1')
+from dotenv import load_dotenv
+import redis
+from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel
+from api.tasks import process_code_review
 
+app = FastAPI(docs_url="/api/docs")
 
-### Create FastAPI instance with custom docs and openapi url
-app = FastAPI(docs_url="/api/docs", openapi_url="/api/openapi.json")
-REDIS_HOST = "localhost"  
-REDIS_PORT = 6379         
-REDIS_DB = 0   
+load_dotenv()
+
+REDIS_HOST = os.getenv("REDIS_HOST")
+REDIS_PORT = os.getenv("REDIS_PORT")
+REDIS_DB = os.getenv("REDIS_DB")
 
 redis_client = redis.StrictRedis(host=REDIS_HOST, port=REDIS_PORT, db=REDIS_DB, decode_responses=True)
-
-@app.get("/api/helloFastApi")
-def hello_fast_api():
-    return {"message": "Hello from FastAPI"}
 
 class PRReviewRequest(BaseModel):
     repo_owner: str
@@ -26,9 +24,9 @@ class PRReviewRequest(BaseModel):
     pr_number: int
     github_token: str
 
-@app.post("/review-pr")
+@app.post("/api/analyze-pr")
 async def submit_pr_review(request: PRReviewRequest):
-
+    print(REDIS_HOST,REDIS_PORT,REDIS_DB)
     task_id = str(uuid.uuid4())
     
     existing_review_key = f"pr_review:{request.repo_owner}/{request.repo_name}:{request.pr_number}"
@@ -38,36 +36,45 @@ async def submit_pr_review(request: PRReviewRequest):
         return {
             "task_id": task_id,
             "status": "cached",
-            "review": existing_review.decode('utf-8')
+            "review": existing_review
         }
-    
-    task2 = add_the_nums.delay(3,2)
-    
-    # task = process_code_review.delay(
-    #     repo_owner=request.repo_owner,
-    #     repo_name=request.repo_name,
-    #     pr_number=request.pr_number,
-    #     github_token=request.github_token,
-    #     task_id=task_id
-    # )
-    
-    print(task2)
+
+    task = process_code_review.delay(
+        repo_owner=request.repo_owner,
+        repo_name=request.repo_name,
+        pr_number=request.pr_number,
+        github_token=request.github_token,
+        task_id=task_id
+    )
+
     return {
         "task_id": task_id,
         "status": "pending"
     }
 
-@app.get("/review-status/{task_id}")
+@app.get("/status/{task_id}")
 async def get_review_status(task_id: str):
-
     status_key = f"task_status:{task_id}"
-    status = redis_client.hgetall(status_key)
-    
+    status = redis_client.hgetall(status_key) 
+
     if not status:
         raise HTTPException(status_code=404, detail="Task not found")
-    
+
     return {
         "task_id": task_id,
-        "status": status.get(b'status', b'unknown').decode('utf-8'),
-        "result": status.get(b'result', b'').decode('utf-8') if status.get(b'result') else None
+        "status": status.get('status', 'unknown'), 
+        "result": json.loads(status.get('result', None))  
+    }
+
+@app.get("/api/results/{task_id}")
+async def get_review_status1(task_id: str):
+    status_key = f"task_status:{task_id}"
+    status = redis_client.hgetall(status_key) 
+    if not status:
+        raise HTTPException(status_code=404, detail="Task not found")
+   
+    return {
+        "task_id": task_id,
+        "status": status.get('status', 'unknown'), 
+        "result": json.loads(status.get('result', None))  
     }
