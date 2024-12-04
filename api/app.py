@@ -50,7 +50,7 @@ async def submit_pr_review(request: PRReviewRequest):
     return {
         "task_id": task_id,
         "status": status.get('status', 'unknown'), 
-        "result": json.loads(status.get('result', "None"))  
+        "result": status.get('result', "None")
     }
 
 @app.get("/api/status/{task_id}")
@@ -64,7 +64,7 @@ async def get_review_status(task_id: str):
     return {
         "task_id": task_id,
         "status": status.get('status', 'unknown'), 
-        "result": json.loads(status.get('result', "None"))  
+        "result": status.get('result', "None")
     }
 
 @app.get("/api/results/{task_id}")
@@ -77,5 +77,5 @@ async def get_review_status1(task_id: str):
     return {
         "task_id": task_id,
         "status": status.get('status', 'unknown'), 
-        "result": json.loads(status.get('result', "None"))  
+        "result": status.get('result', "None")  
     }
