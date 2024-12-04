@@ -1,4 +1,4 @@
-# AI PR Reviewer
+# AI PR Reviewer for PotPie AI
 
 ## Project Overview
 
@@ -69,7 +69,7 @@ If initial request doesn't return results, wait briefly and resubmit the request
 
 ## Documentation
 
-Full API documentation with curl requests is available at `example.com/api/docs`
+Full API documentation with curl requests is available at `https://fastapi-app-y507.onrender.com/api/docs`
 
 
 ## API Endpoints
